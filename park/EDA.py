@@ -21,121 +21,24 @@ def main(args):
     seed_everything(args.SEED)
 
     ######################## DATA LOAD
-    print(f'--------------- {args.MODEL} Load Data ---------------')
-    if args.MODEL in ('FM', 'FFM'):
-        data = context_data_load(args)
+    print(f'--------------- Load Data ---------------')
+    data = context_data_load(args)
 
-        # data = pd.read_csv(args.PREPROCESSED_PATH + f'{args.MODEL}_train_preprocessed_data.csv')
-        
-    # elif args.MODEL in ('NCF', 'WDN', 'DCN'):
-    #     data = dl_data_load(args)
-    # elif args.MODEL == 'CNN_FM':
-    #     data = image_data_load(args)
-    # elif args.MODEL == 'DeepCoNN':
-    #     import nltk
-    #     nltk.download('punkt')
-    #     data = text_data_load(args)
-    # else:
-    #     pass
-    
     ####################### SAVE preprocessed data
-    print(f'--------------- SAVE {args.MODEL} preprocessed data ---------------')
-    if args.MODEL in ('FM', 'FFM', 'NCF', 'WDN', 'DCN', 'CNN_FM', 'DeepCoNN'):
-        submission_train = data['train']
-        submission_test = data['test']
-        # submission_mean = data['train'][['user_id', 'isbn', 'mean']]
-
-        # submission_mean = data[['user_id', 'isbn', 'mean']]
-
-        # submission_mean['user_id'] = submission_mean['user_id'].map(idx2user)
-        # submission_mean['isbn'] = submission_mean['isbn'].map(idx2isbn)
-
-    else:
-        pass
+    print(f'--------------- SAVE preprocessed data ---------------')
+    submission_train = data['train']
+    submission_test = data['test']
 
     now = time.localtime()
     now_date = time.strftime('%Y%m%d', now)
     now_hour = time.strftime('%X', now)
     save_time = now_date + '_' + now_hour.replace(':', '')
-    submission_train.to_csv('preprocessed/{}_train_preprocessed_data.csv'.format(args.MODEL, save_time), index=False, mode='w')
-    submission_test.to_csv('preprocessed/{}_test_preprocessed_data.csv'.format(args.MODEL, save_time), index=False, mode='w')
-    # submission_mean.to_csv('preprocessed/{}_user_mean_preprocessed_data.csv'.format(args.MODEL, save_time), index=False, mode='w')
+    submission_train.to_csv('preprocessed/train_preprocessed_data_{}.csv'.format(save_time), index=False, mode='w')
+    submission_test.to_csv('preprocessed/test_preprocessed_data_{}.csv'.format(save_time), index=False, mode='w')
 
     print('done')
     
     
-    
-    
-    
-#     ######################## Train/Valid Split
-#     print(f'--------------- {args.MODEL} Train/Valid Split ---------------')
-#     if args.MODEL in ('FM', 'FFM'):
-#         data = context_data_split(args, data)
-#         data = context_data_loader(args, data)
-
-#     elif args.MODEL in ('NCF', 'WDN', 'DCN'):
-#         data = dl_data_split(args, data)
-#         data = dl_data_loader(args, data)
-
-#     elif args.MODEL=='CNN_FM':
-#         data = image_data_split(args, data)
-#         data = image_data_loader(args, data)
-
-#     elif args.MODEL=='DeepCoNN':
-#         data = text_data_split(args, data)
-#         data = text_data_loader(args, data)
-#     else:
-#         pass
-
-#     ######################## Model
-#     print(f'--------------- INIT {args.MODEL} ---------------')
-#     if args.MODEL=='FM':
-#         model = FactorizationMachineModel(args, data)
-#     elif args.MODEL=='FFM':
-#         model = FieldAwareFactorizationMachineModel(args, data)
-#     elif args.MODEL=='NCF':
-#         model = NeuralCollaborativeFiltering(args, data)
-#     elif args.MODEL=='WDN':
-#         model = WideAndDeepModel(args, data)
-#     elif args.MODEL=='DCN':
-#         model = DeepCrossNetworkModel(args, data)
-#     elif args.MODEL=='CNN_FM':
-#         model = CNN_FM(args, data)
-#     elif args.MODEL=='DeepCoNN':
-#         model = DeepCoNN(args, data)
-#     else:
-#         pass
-
-#     ######################## TRAIN
-#     print(f'--------------- {args.MODEL} TRAINING ---------------')
-#     model.train()
-
-#     ######################## INFERENCE
-#     print(f'--------------- {args.MODEL} PREDICT ---------------')
-#     if args.MODEL in ('FM', 'FFM', 'NCF', 'WDN', 'DCN'):
-#         predicts = model.predict(data['test_dataloader'])
-#     elif args.MODEL=='CNN_FM':
-#         predicts  = model.predict(data['test_dataloader'])
-#     elif args.MODEL=='DeepCoNN':
-#         predicts  = model.predict(data['test_dataloader'])
-#     else:
-#         pass
-
-#     ######################## SAVE PREDICT
-#     print(f'--------------- SAVE {args.MODEL} PREDICT ---------------')
-#     submission = pd.read_csv(args.DATA_PATH + 'sample_submission.csv')
-#     if args.MODEL in ('FM', 'FFM', 'NCF', 'WDN', 'DCN', 'CNN_FM', 'DeepCoNN'):
-#         submission['rating'] = predicts
-#     else:
-#         pass
-
-#     now = time.localtime()
-#     now_date = time.strftime('%Y%m%d', now)
-#     now_hour = time.strftime('%X', now)
-#     save_time = now_date + '_' + now_hour.replace(':', '')
-#     submission.to_csv('submit/{}_{}.csv'.format(save_time, args.MODEL), index=False)
-
-
 
 if __name__ == "__main__":
 

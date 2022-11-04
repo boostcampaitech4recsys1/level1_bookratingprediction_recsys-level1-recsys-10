@@ -24,7 +24,6 @@ def main(args):
     ######################## DATA LOAD
     print(f'--------------- {args.MODEL} Load Data ---------------')
     if args.MODEL in ('FM', 'FFM'):
-        # data, mean_data = context_data_load(args)
         data = context_data_load(args)
     elif args.MODEL in ('NCF', 'WDN', 'DCN'):
         data, idx = dl_data_load(args)
@@ -39,8 +38,6 @@ def main(args):
     else:
         pass
 
-    # submission_train = data['train']
-    # submission_test = data['test']
     
     ######################## Train/Valid Split
     print(f'--------------- {args.MODEL} Train/Valid Split ---------------')
@@ -100,14 +97,6 @@ def main(args):
     else:
         pass
     
-    # print(f'--------------- SAVE {args.MODEL} preprocessed data ---------------')
-    # if args.MODEL in ('FM', 'FFM', 'NCF', 'WDN', 'DCN', 'CNN_FM', 'DeepCoNN'):
-    #     submission_train.to_csv('preprocessed/{}_train_preprocessed_data.csv'.format(args.MODEL), index=False, mode='w')
-    #     submission_test.to_csv('preprocessed/{}_test_preprocessed_data.csv'.format(args.MODEL), index=False, mode='w')
-
-    # else:
-    #     pass
-
 
     ######################## SAVE PREDICT
     print(f'--------------- SAVE {args.MODEL} PREDICT ---------------')
@@ -115,19 +104,6 @@ def main(args):
     if args.MODEL in ('FM', 'FFM', 'NCF', 'WDN', 'DCN', 'CNN_FM', 'DeepCoNN'):
         submission['rating'] = predicts
 
-        # print("$$$$$$$$$$$$$$$")
-        # print(submission.head(10))
-
-        # mean_user_id = mean_data['user_id'].unique()
-
-        # for id in mean_user_id:
-        #     predict_index = submission[submission['user_id']==id]['user_id'].index
-        #     mean_rating = float(mean_data[mean_data['user_id']==id]['mean'].unique())
-        #     for idx in predict_index:
-        #         submission.loc[submission[submission['user_id'].index==idx].index, 'rating'] += mean_rating
-
-        # print(submission.head(10))
-        # print("$$$$$$$$$$$$$$$")
 
 
     else:
