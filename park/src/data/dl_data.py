@@ -50,23 +50,27 @@ def dl_data_load(args):
     # field_dims_preprocessed = np.array([len(user2idx), len(isbn2idx)], dtype=np.uint32)
     # field_dims_preprocessed = np.array([len(user2idx), len(isbn2idx), 6, len(idx['user_mean2idx']), len(idx['isbn_mean2idx']),
     #                                     len(idx['publisher2idx']), len(idx['language2idx']), len(idx['author2idx'])], dtype=np.uint32) #len(idx['language2idx'])
-    # all
+    
+    # all feature
     field_dims_preprocessed = np.array([len(user2idx), len(isbn2idx), 6, #len(idx['user_mean2idx']), #len(idx['isbn_mean2idx']),
                             len(idx['loc_city2idx']), len(idx['loc_state2idx']), len(idx['loc_country2idx']),# len(idx['title2idx']),
                             len(idx['publisher2idx']), len(idx['language2idx']), len(idx['author2idx'])], dtype=np.uint32)
 
-
-    img_train = process_img_data(train_data, books, user2idx, isbn2idx, train=True)
-    img_test = process_img_data(test_data, books, user2idx, isbn2idx, train=False)
+    # CNN_FM image vector processed
+    # img_train = process_img_data(train_data, books, user2idx, isbn2idx, train=True)
+    # img_test = process_img_data(test_data, books, user2idx, isbn2idx, train=False)
 
 
     # print(type(train_data)) # pd
 
     data = {
+            # basic
             # 'train':train,
             # 'test':test.drop(['rating'], axis=1),
+            # DCN
             # 'train':train_data.drop(['location_city','location_state','location_country','category_high'], axis=1),
             # 'test':test_data.drop(['location_city','location_state','location_country','category_high'], axis=1),
+            # DCN + CNN_FM
             'train':img_train.drop(['user_mean','isbn_mean', 'book_title'], axis=1),
             'test':img_test.drop(['user_mean','isbn_mean', 'book_title'], axis=1),
             # 'field_dims':field_dims,
@@ -113,34 +117,36 @@ class Image_Dataset(Dataset):
 
 
 def dl_data_loader(args, data):
-    # train_dataset = TensorDataset(torch.LongTensor(data['X_train'].values), torch.LongTensor(data['y_train'].values))
-    # valid_dataset = TensorDataset(torch.LongTensor(data['X_valid'].values), torch.LongTensor(data['y_valid'].values))
-    # test_dataset = TensorDataset(torch.LongTensor(data['test'].values))
+    # basic DCN
+    train_dataset = TensorDataset(torch.LongTensor(data['X_train'].values), torch.LongTensor(data['y_train'].values))
+    valid_dataset = TensorDataset(torch.LongTensor(data['X_valid'].values), torch.LongTensor(data['y_valid'].values))
+    test_dataset = TensorDataset(torch.LongTensor(data['test'].values))
 
-    train_dataset = Image_Dataset(
-                                data['X_train'].drop(['img_vector', 'img_path'], axis=1).values,
-                                data['X_train']['img_vector'].values,
-                                data['y_train'].values
-                                )
-    valid_dataset = Image_Dataset(
-                                data['X_valid'].drop(['img_vector', 'img_path'], axis=1).values,
-                                data['X_valid']['img_vector'].values,
-                                data['y_valid'].values
-                                )
-    test_dataset = Image_Dataset(
-                                data['test'].drop(['img_vector', 'img_path'], axis=1).values,
-                                data['test']['img_vector'].values,
-                                # 0
-                                data['test_img']['rating'].values
-                                )
+    train_dataloader = DataLoader(train_dataset, batch_size=args.BATCH_SIZE, shuffle=args.DATA_SHUFFLE)
+    valid_dataloader = DataLoader(valid_dataset, batch_size=args.BATCH_SIZE, shuffle=args.DATA_SHUFFLE)
+    test_dataloader = DataLoader(test_dataset, batch_size=args.BATCH_SIZE, shuffle=False)
 
-    # train_dataloader = DataLoader(train_dataset, batch_size=args.BATCH_SIZE, shuffle=args.DATA_SHUFFLE)
-    # valid_dataloader = DataLoader(valid_dataset, batch_size=args.BATCH_SIZE, shuffle=args.DATA_SHUFFLE)
-    # test_dataloader = DataLoader(test_dataset, batch_size=args.BATCH_SIZE, shuffle=False)
+    # basic DCN + CNN_FM
+    # train_dataset = Image_Dataset(
+    #                             data['X_train'].drop(['img_vector', 'img_path'], axis=1).values,
+    #                             data['X_train']['img_vector'].values,
+    #                             data['y_train'].values
+    #                             )
+    # valid_dataset = Image_Dataset(
+    #                             data['X_valid'].drop(['img_vector', 'img_path'], axis=1).values,
+    #                             data['X_valid']['img_vector'].values,
+    #                             data['y_valid'].values
+    #                             )
+    # test_dataset = Image_Dataset(
+    #                             data['test'].drop(['img_vector', 'img_path'], axis=1).values,
+    #                             data['test']['img_vector'].values,
+    #                             # 0
+    #                             data['test_img']['rating'].values
+    #                             )
 
-    train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=args.BATCH_SIZE, num_workers=0, shuffle=True)
-    valid_dataloader = torch.utils.data.DataLoader(valid_dataset, batch_size=args.BATCH_SIZE, num_workers=0, shuffle=True)
-    test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=args.BATCH_SIZE, num_workers=0, shuffle=False)
+    # train_dataloader = torch.utils.data.DataLoader(train_dataset, batch_size=args.BATCH_SIZE, num_workers=0, shuffle=True)
+    # valid_dataloader = torch.utils.data.DataLoader(valid_dataset, batch_size=args.BATCH_SIZE, num_workers=0, shuffle=True)
+    # test_dataloader = torch.utils.data.DataLoader(test_dataset, batch_size=args.BATCH_SIZE, num_workers=0, shuffle=False)
 
     data['train_dataloader'], data['valid_dataloader'], data['test_dataloader'] = train_dataloader, valid_dataloader, test_dataloader
 

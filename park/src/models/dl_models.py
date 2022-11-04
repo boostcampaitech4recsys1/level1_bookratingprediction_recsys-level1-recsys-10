@@ -182,7 +182,6 @@ class DeepCrossNetworkModel:
         super().__init__()
 
         self.criterion = RMSELoss()
-        # self.criterion = 
         # self.criterion = torch.nn.CrossEntropyLoss()
         
         self.data = data
@@ -229,15 +228,15 @@ class DeepCrossNetworkModel:
             self.model.train()
             total_loss = 0
             tk0 = tqdm.tqdm(self.train_dataloader, smoothing=0, mininterval=1.0)
-            # for i, (fields, target) in enumerate(tk0):
-            for i, data in enumerate(tk0):
-                # print(len(data))
-                if len(data) == 2:
-                    fields, target = [data['user_isbn_vector'].to(self.device)], data['label'].to(self.device)
-                else:
-                    fields, target = [data['user_isbn_vector'].to(self.device), data['img_vector'].to(self.device)], data['label'].to(self.device)
+            for i, (fields, target) in enumerate(tk0):
+                fields, target = fields.to(self.device), target.to(self.device)
+            # # CNN_FM
+            # for i, data in enumerate(tk0):
+            #     if len(data) == 2:
+            #         fields, target = [data['user_isbn_vector'].to(self.device)], data['label'].to(self.device)
+            #     else:
+            #         fields, target = [data['user_isbn_vector'].to(self.device), data['img_vector'].to(self.device)], data['label'].to(self.device)
 
-                # fields, target = fields.to(self.device), target.to(self.device)
 
                 y = self.model(fields)
 
@@ -264,19 +263,19 @@ class DeepCrossNetworkModel:
         targets, predicts = list(), list()
         total_loss, cnt = 0, 0
         with torch.no_grad():
-            # for fields, target in tqdm.tqdm(self.valid_dataloader, smoothing=0, mininterval=1.0):
-            for data in tqdm.tqdm(self.valid_dataloader, smoothing=0, mininterval=1.0):
-                # fields, target = fields.to(self.device), target.to(self.device)
-                if len(data) == 2:
-                    fields, target = [data['user_isbn_vector'].to(self.device)], data['label'].to(self.device)
-                else:
-                    fields, target = [data['user_isbn_vector'].to(self.device), data['img_vector'].to(self.device)], data['label'].to(self.device)
-                # ########################## classification
-                # target = target-1
-                # ########################## classification
+            for fields, target in tqdm.tqdm(self.valid_dataloader, smoothing=0, mininterval=1.0):
+                fields, target = fields.to(self.device), target.to(self.device)
+            # CNN_FM
+            # for data in tqdm.tqdm(self.valid_dataloader, smoothing=0, mininterval=1.0):
+            #     if len(data) == 2:
+            #         fields, target = [data['user_isbn_vector'].to(self.device)], data['label'].to(self.device)
+            #     else:
+            #         fields, target = [data['user_isbn_vector'].to(self.device), data['img_vector'].to(self.device)], data['label'].to(self.device)
+
                 y = self.model(fields)
 
                 # ########################## classification
+                # target = target-1
                 # loss = self.criterion(y, target.long())
                 # total_loss += loss
                 # cnt+=1
@@ -284,7 +283,9 @@ class DeepCrossNetworkModel:
 
                 targets.extend(target.tolist())
                 predicts.extend(y.tolist())
+        # ########################## classification
         # mean_total_loss = total_loss/cnt
+        # ########################## classification
 
         return rmse(targets, predicts) #mean_total_loss.item()
 
@@ -293,13 +294,15 @@ class DeepCrossNetworkModel:
         self.model.eval()
         predicts = list()
         with torch.no_grad():
-            for data in tqdm.tqdm(dataloader, smoothing=0, mininterval=1.0):
-                if len(data) == 2:
-                    fields, target = [data['user_isbn_vector'].to(self.device)], data['label'].to(self.device)
-                    fields = fields[0].to(self.device)
-                else:
-                    fields, target = [data['user_isbn_vector'].to(self.device), data['img_vector'].to(self.device)], data['label'].to(self.device)
-                    fields = fields[0].to(self.device)
+            for fields in tqdm.tqdm(dataloader, smoothing=0, mininterval=1.0):
+            # CNN_FM
+            # for data in tqdm.tqdm(dataloader, smoothing=0, mininterval=1.0):
+            #     if len(data) == 2:
+            #         fields, target = [data['user_isbn_vector'].to(self.device)], data['label'].to(self.device)
+            #         fields = fields[0].to(self.device)
+            #     else:
+            #         fields, target = [data['user_isbn_vector'].to(self.device), data['img_vector'].to(self.device)], data['label'].to(self.device)
+            #         fields = fields[0].to(self.device)
                 y = self.model(fields)
                 
                 # ########################## classification

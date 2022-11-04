@@ -355,7 +355,9 @@ class _DeepCrossNetworkModel(nn.Module):
         self.embedding = FeaturesEmbedding(field_dims, embed_dim)
         self.embed_output_dim = len(field_dims) * embed_dim
         self.cn = CrossNetwork(self.embed_output_dim, num_layers)
-        # input_dim, embed_dims, dropout, mlp_num_layers, output_layer=True
+        self.mlp = DCN_MultiLayerPerceptron(self.embed_output_dim, mlp_dims, dropout, mlp_num_layers, output_layer=False)
+        # self.mlp = MultiLayerPerceptron(self.embed_output_dim, mlp_dims, dropout, output_layer=False)
+
         self.cnn_fm = _CNN_FM(
                             np.array([ len(idx['user2idx']), len(idx['isbn2idx'])],#, 6,
                                     # len(idx['loc_city2idx']), len(idx['loc_state2idx']), len(idx['loc_country2idx']),
@@ -364,8 +366,7 @@ class _DeepCrossNetworkModel(nn.Module):
                             args.CNN_FM_EMBED_DIM,
                             args.CNN_FM_LATENT_DIM
                             )
-        self.mlp = DCN_MultiLayerPerceptron(self.embed_output_dim, mlp_dims, dropout, mlp_num_layers, output_layer=False)
-        # self.mlp = MultiLayerPerceptron(self.embed_output_dim, mlp_dims, dropout, output_layer=False)
+
         self.cd_linear_s = nn.Linear(mlp_dims[0], 1, bias=False)
         self.cd_linear_p = nn.Linear(mlp_dims[0]*2, 1, bias=False)
         self.relu = nn.ReLU()
@@ -383,20 +384,28 @@ class _DeepCrossNetworkModel(nn.Module):
         # p = self.cd_linear_s(x_out)
         
         # parellel
-        # print(len(x))
-        if len(x)==2:
-            embed_x = self.embedding(x[0]).view(-1, self.embed_output_dim)
-            x_l1 = self.cn(embed_x)
-            x_h1 = self.mlp(embed_x)
-            x_out = torch.cat([x_l1, x_h1], 1)
-        else:
-            embed_x = self.embedding(x[0]).view(-1, self.embed_output_dim)
-            x_l1 = self.cn(embed_x)         # 2048 1152
-            x_h1 = self.mlp(embed_x)
-            x_ = torch.cat([x_l1, x_h1], 1)
+        embed_x = self.embedding(x).view(-1, self.embed_output_dim)
+        x_l1 = self.cn(embed_x)
+        x_h1 = self.mlp(embed_x)
+        x_out = torch.cat([x_l1, x_h1], 1)
 
-            x_cnn = self.cnn_fm(x)
-            x_out = (x_*0.6) + (x_cnn*0.4)
+
+
+        # parellel DCN + CNN_FM
+        # if len(x)==2:
+        #     embed_x = self.embedding(x[0]).view(-1, self.embed_output_dim)
+        #     x_l1 = self.cn(embed_x)
+        #     x_h1 = self.mlp(embed_x)
+        #     x_out = torch.cat([x_l1, x_h1], 1)
+        # else:
+        #     embed_x = self.embedding(x[0]).view(-1, self.embed_output_dim)
+        #     x_l1 = self.cn(embed_x)         # 2048 1152
+        #     x_h1 = self.mlp(embed_x)
+        #     x_ = torch.cat([x_l1, x_h1], 1)
+
+        #     x_cnn = self.cnn_fm(x)
+        #     x_out = (x_*0.6) + (x_cnn*0.4)
+        
 
         p = self.cd_linear_p(x_out)
 
